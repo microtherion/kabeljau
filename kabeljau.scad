@@ -118,4 +118,4 @@ module kabeljau() {
     }
 }
 
-kabeljau();
+rotate([90, 0, 0]) kabeljau();
