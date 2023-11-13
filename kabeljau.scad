@@ -28,8 +28,17 @@ length        = 10.0;           // [5.0:1.0:30.0]
 // Height of Slip Barrier
 barrier       = 10.0;           // [0.0:1.0:20.0]
 
-// Height of Wall Plate
-wall_height   = 20.0;           // [10.0:1.0:50.0]
+// Mounting height above barrier
+mount_height   = 20.0;          // [10.0:1.0:50.0]
+
+// Diameter of Mounting Pad
+mount_pad     = 10.0;           // [5.0:.25:20.0]
+
+// Bottom Width of Mounting Stalk
+stalk_bottom  =  8.0;           // [5.0:.5:20.0]
+
+// Top Width of Mounting Stalk
+stalk_top     =  2.0;           // [1.0:.5:20.0]
 
 // Diameter of Mounting Hole
 mount_hole    = 2.1;            // [1.0:0.1:10.0]
@@ -68,14 +77,29 @@ module round_l(x) {
     translate([0, 0, length+thickness]) round_plate(x, barrier+thickness, thickness);
 }
 
+module stalk(offset) {
+    linear_extrude(height=thickness) {
+        polygon([[-0.5*stalk_bottom, 0], [0.5*stalk_bottom, 0], [0.5*stalk_top+offset, mount_height], [-0.5*stalk_top+offset, mount_height]]);
+    }
+}
+
+module eye(d1, d2, offset) {
+    difference() {
+        union() {
+            cylinder(d=d1, h=thickness);
+            translate([-offset, -mount_height, 0]) stalk(offset);
+        }
+        cylinder(d=d2, h=thickness);
+    }
+}
+
 module kabeljau() {
     // Back plate
-    offset=0.5*(wall_height-barrier);
-    difference() {
-        round_plate(slots*spacing, thickness+wall_height, thickness);
-        translate([offset, thickness+wall_height-offset, 0]) cylinder(h=thickness, d=mount_hole);
-        translate([slots*spacing-offset, thickness+wall_height-offset, 0]) cylinder(h=thickness, d=mount_hole);
-    }
+    round_plate(slots*spacing, thickness+barrier, thickness);
+
+    // Mounting pads
+    translate([0.5*mount_pad, 0.5*thickness+barrier+mount_height]) eye(mount_pad, mount_hole, 0.5*mount_pad-spacing);
+    translate([slots*spacing-0.5*mount_pad, 0.5*thickness+barrier+mount_height]) eye(mount_pad, mount_hole, spacing-0.5*mount_pad);
 
     difference() {
         union() {
